@@ -2,3 +2,6 @@ node_modules/
 .playwright/
 *.log
 npm-debug.log*
+
+# Ignore screenshots created by the Playwright client
+screenshots/

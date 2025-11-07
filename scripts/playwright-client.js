@@ -4,8 +4,8 @@
 //   node scripts/playwright-client.js navigate <url>
 //   node scripts/playwright-client.js screenshot <url> <output.png>
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 async function run() {
   const argv = process.argv.slice(2);
@@ -13,14 +13,16 @@ async function run() {
 
   const cmd = argv[0];
   const url = argv[1];
-  const server = process.env.PLAYWRIGHT_SERVER || 'http://localhost:3000';
+  const server = process.env.PLAYWRIGHT_SERVER || "http://localhost:3000";
 
   if (!url) return usage(1);
 
-  if (cmd === 'navigate') {
-    const res = await fetch(`${server}/navigate?url=${encodeURIComponent(url)}`);
+  if (cmd === "navigate") {
+    const res = await fetch(
+      `${server}/navigate?url=${encodeURIComponent(url)}`
+    );
     if (!res.ok) {
-      console.error('Server error:', res.status, await res.text());
+      console.error("Server error:", res.status, await res.text());
       process.exit(2);
     }
     const json = await res.json();
@@ -28,16 +30,27 @@ async function run() {
     process.exit(0);
   }
 
-  if (cmd === 'screenshot') {
-    const out = argv[2] || 'screenshot.png';
-    const res = await fetch(`${server}/screenshot?url=${encodeURIComponent(url)}`);
+  if (cmd === "screenshot") {
+    let out = argv[2] || "screenshot.png";
+    // Ensure screenshots go into the screenshots/ folder by default.
+    // If the user provided a path with a directory, respect it; otherwise place into screenshots/.
+    if (!path.dirname(out) || path.dirname(out) === ".") {
+      out = path.join("screenshots", out);
+    }
+
+    const res = await fetch(
+      `${server}/screenshot?url=${encodeURIComponent(url)}`
+    );
     if (!res.ok) {
-      console.error('Server error:', res.status, await res.text());
+      console.error("Server error:", res.status, await res.text());
       process.exit(2);
     }
     const buffer = Buffer.from(await res.arrayBuffer());
+    // Create directory if needed
+    const dir = path.dirname(out);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(out, buffer);
-    console.log('Saved screenshot to', out);
+    console.log("Saved screenshot to", out);
     process.exit(0);
   }
 
@@ -45,20 +58,25 @@ async function run() {
 }
 
 function usage(code = 0) {
-  console.log('Usage:');
-  console.log('  node scripts/playwright-client.js navigate <url>');
-  console.log('  node scripts/playwright-client.js screenshot <url> [output.png]');
-  console.log('\nEnvironment:');
-  console.log('  PLAYWRIGHT_SERVER - base URL of server (default http://localhost:3000)');
+  console.log("Usage:");
+  console.log("  node scripts/playwright-client.js navigate <url>");
+  console.log(
+    "  node scripts/playwright-client.js screenshot <url> [output.png]"
+  );
+  console.log("\nEnvironment:");
+  console.log(
+    "  PLAYWRIGHT_SERVER - base URL of server (default http://localhost:3000)"
+  );
   process.exit(code);
 }
 
 // Node 18+ has global fetch; polyfill minimally if not present
-if (typeof fetch === 'undefined') {
-  global.fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+if (typeof fetch === "undefined") {
+  global.fetch = (...args) =>
+    import("node-fetch").then(({ default: fetch }) => fetch(...args));
 }
 
 run().catch((err) => {
-  console.error('Client error:', err);
+  console.error("Client error:", err);
   process.exit(1);
 });
