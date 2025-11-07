@@ -21,22 +21,34 @@ const path = require("path");
 
   // Click Step
   console.log("Clicking Step");
-  await page.click("#btn-step");
+  const stepBtn = page.locator("#btn-step");
+  await stepBtn.waitFor({ state: "visible", timeout: 5000 });
+  await stepBtn.scrollIntoViewIfNeeded();
+  // Use DOM click via evaluate to avoid "element outside of viewport" errors
+  await stepBtn.evaluate((el) => el.click());
   await page.waitForTimeout(300);
 
   // Click Run (starts auto-running for a short while)
   console.log("Clicking Run");
-  await page.click("#btn-run");
+  const runBtn = page.locator("#btn-run");
+  await runBtn.waitFor({ state: "visible", timeout: 5000 });
+  await runBtn.scrollIntoViewIfNeeded();
+  // Use DOM click via evaluate to avoid viewport/scrolling issues
+  await runBtn.evaluate((el) => el.click());
   await page.waitForTimeout(2200);
 
   // Click Run again to pause
   console.log("Pausing Run");
-  await page.click("#btn-run");
+  await runBtn.scrollIntoViewIfNeeded();
+  await runBtn.evaluate((el) => el.click());
   await page.waitForTimeout(200);
 
   // Click Reset
   console.log("Clicking Reset");
-  await page.click("#btn-reset");
+  const resetBtn = page.locator("#btn-reset");
+  await resetBtn.waitFor({ state: "visible", timeout: 5000 });
+  await resetBtn.scrollIntoViewIfNeeded();
+  await resetBtn.evaluate((el) => el.click());
   await page.waitForTimeout(300);
 
   // Save screenshot for visual inspection
