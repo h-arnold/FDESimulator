@@ -1,549 +1,139 @@
 <!DOCTYPE html>
 <html lang="en" class="h-full">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Fetch-Decode-Execute Cycle Simulator</title>
     <!-- Load Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Use Inter font, Tailwind's default sans-serif */
-        body {
-            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-            background-color: #111827; /* bg-gray-900 */
-            color: #f3f4f6; /* text-gray-100 */
-        }
-
-        /* Base style for all simulation components */
-        .component {
-            border: 2px solid #4b5563; /* border-gray-600 */
-            background-color: #374151; /* bg-gray-700 */
-            border-radius: 0.5rem; /* rounded-lg */
-            padding: 1rem; /* p-4 */
-            transition: all 0.2s ease-in-out;
-            min-height: 80px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        /* Style for register components */
-        .component.register {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem 1rem; /* p-3 p-4 */
-        }
-
-        .component-label {
-            font-weight: 600; /* font-semibold */
-            color: #d1d5db; /* text-gray-300 */
-            margin-right: 1rem;
-            font-size: 0.875rem; /* text-sm */
-        }
-
-        .component-value {
-            font-family: "Courier New", Courier, monospace;
-            font-size: 1.125rem; /* text-lg */
-            font-weight: 700; /* font-bold */
-            color: #f9fafb; /* text-gray-50 */
-            background-color: #1f2937; /* bg-gray-800 */
-            padding: 0.25rem 0.75rem; /* p-1 px-3 */
-            border-radius: 0.375rem; /* rounded-md */
-            min-width: 80px;
-            text-align: right;
-        }
-
-        /* Style for Memory slots */
-        .memory-slot {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.5rem; /* p-2 */
-            border-bottom: 1px solid #4b5563; /* border-gray-600 */
-            font-family: "Courier New", Courier, monospace;
-            transition: all 0.2s ease-in-out;
-        }
-        .memory-slot:last-child {
-            border-bottom: none;
-        }
-
-        .memory-addr {
-            font-weight: 600; /* font-semibold */
-            color: #9ca3af; /* text-gray-400 */
-            margin-right: 1rem;
-        }
-
-        .memory-val {
-            font-weight: 700; /* font-bold */
-            color: #e5e7eb; /* text-gray-200 */
-        }
-
-        /* Highlight class for active components */
-        .highlight {
-            background-color: #3b82f6; /* bg-blue-600 */
-            border-color: #93c5fd; /* border-blue-300 */
-            transform: scale(1.03);
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
-        }
-
-        /* Special highlight for CU/ALU when active */
-        .highlight-active {
-            background-color: #eab308; /* bg-yellow-500 */
-            border-color: #fde047; /* border-yellow-300 */
-            transform: scale(1.03);
-            box-shadow: 0 0 15px rgba(234, 179, 8, 0.5);
-        }
-        
-        /* Disabled button style */
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-    </style>
-</head>
-<body class="h-full flex items-center justify-center p-4 sm:p-6 lg:p-8">
-
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="h-full flex items-center justify-center p-4 sm:p-6 lg:p-8">
     <div class="w-full max-w-7xl mx-auto">
-        <header class="text-center mb-6">
-            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">Fetch-Decode-Execute Cycle Simulator</h1>
-        </header>
+      <header class="text-center mb-6">
+        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">
+          Fetch-Decode-Execute Cycle Simulator
+        </h1>
+      </header>
 
-        <!-- Main container for simulation and controls -->
-        <div class="flex flex-col gap-6">
+      <!-- Main container for simulation and controls -->
+      <div class="flex flex-col gap-6">
+        <!-- Control Panel -->
+        <section class="bg-gray-800 p-4 rounded-lg shadow-xl">
+          <div class="flex flex-wrap items-center justify-center gap-4">
+            <button
+              id="btn-step"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+            >
+              Step
+            </button>
+            <button
+              id="btn-run"
+              class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+            >
+              Run
+            </button>
+            <button
+              id="btn-reset"
+              class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+            >
+              Reset
+            </button>
+          </div>
+        </section>
 
-            <!-- Control Panel -->
-            <section class="bg-gray-800 p-4 rounded-lg shadow-xl">
-                <div class="flex flex-wrap items-center justify-center gap-4">
-                    <button id="btn-step" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-colors">
-                        Step
-                    </button>
-                    <button id="btn-run" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg transition-colors">
-                        Run
-                    </button>
-                    <button id="btn-reset" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-colors">
-                        Reset
-                    </button>
+        <!-- Status Display -->
+        <section class="bg-gray-800 p-6 rounded-lg shadow-xl text-center">
+          <h2
+            class="text-2xl font-semibold text-yellow-400 mb-3"
+            id="current-phase"
+          >
+            IDLE
+          </h2>
+          <p
+            class="text-lg text-gray-200 min-h-[3em] flex items-center justify-center"
+            id="step-description"
+          >
+            Click 'Step' or 'Run' to begin the simulation.
+          </p>
+        </section>
+
+        <!-- Simulation Area (CPU and Memory) -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- CPU Block -->
+          <div class="md:col-span-2 bg-gray-800 p-6 rounded-lg shadow-xl">
+            <h3
+              class="text-xl font-semibold mb-4 text-center border-b border-gray-600 pb-2"
+            >
+              Central Processing Unit (CPU)
+            </h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Column 1: CU, ALU, ACC -->
+              <div class="flex flex-col gap-4">
+                <div id="cu" class="component">
+                  <h4 class="component-label text-center text-lg">
+                    Control Unit (CU)
+                  </h4>
                 </div>
-            </section>
-
-            <!-- Status Display -->
-            <section class="bg-gray-800 p-6 rounded-lg shadow-xl text-center">
-                <h2 class="text-2xl font-semibold text-yellow-400 mb-3" id="current-phase">IDLE</h2>
-                <p class="text-lg text-gray-200 min-h-[3em] flex items-center justify-center" id="step-description">
-                    Click 'Step' or 'Run' to begin the simulation.
-                </p>
-            </section>
-
-            <!-- Simulation Area (CPU and Memory) -->
-            <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-                <!-- CPU Block -->
-                <div class="md:col-span-2 bg-gray-800 p-6 rounded-lg shadow-xl">
-                    <h3 class="text-xl font-semibold mb-4 text-center border-b border-gray-600 pb-2">Central Processing Unit (CPU)</h3>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                        <!-- Column 1: CU, ALU, ACC -->
-                        <div class="flex flex-col gap-4">
-                            <div id="cu" class="component">
-                                <h4 class="component-label text-center text-lg">Control Unit (CU)</h4>
-                            </div>
-                            <div id="alu" class="component">
-                                <h4 class="component-label text-center text-lg">Arithmetic Logic Unit (ALU)</h4>
-                            </div>
-                            <div id="acc" class="component register">
-                                <span class="component-label text-lg">Accumulator (ACC)</span>
-                                <span id="acc-value" class="component-value"></span>
-                            </div>
-                        </div>
-
-                        <!-- Column 2: Registers -->
-                        <div class="flex flex-col gap-4">
-                            <div id="pc" class="component register">
-                                <span class="component-label text-lg">Program Counter (PC)</span>
-                                <span id="pc-value" class="component-value">0</span>
-                            </div>
-                            <div id="mar" class="component register">
-                                <span class="component-label text-lg">Memory Addr Reg (MAR)</span>
-                                <span id="mar-value" class="component-value"></span>
-                            </div>
-                            <div id="mdr" class="component register">
-                                <span class="component-label text-lg">Memory Data Reg (MDR)</span>
-                                <span id="mdr-value" class="component-value"></span>
-                            </div>
-                            <div id="cir" class="component register">
-                                <span class="component-label text-lg">Current Inst Reg (CIR)</span>
-                                <span id="cir-value" class-"component-value"></span>
-                            </div>
-                        </div>
-                    </div>
+                <div id="alu" class="component">
+                  <h4 class="component-label text-center text-lg">
+                    Arithmetic Logic Unit (ALU)
+                  </h4>
                 </div>
-
-                <!-- Memory (RAM) Block -->
-                <div class="md:col-span-1 bg-gray-800 p-6 rounded-lg shadow-xl">
-                    <h3 class="text-xl font-semibold mb-4 text-center border-b border-gray-600 pb-2">Memory (RAM)</h3>
-                    <div id="memory-container" class="bg-gray-700 rounded-lg overflow-hidden">
-                        <!-- Memory slots will be generated by JS -->
-                    </div>
+                <div id="acc" class="component register">
+                  <span class="component-label text-lg">Accumulator (ACC)</span>
+                  <span id="acc-value" class="component-value"></span>
                 </div>
+              </div>
 
-            </section>
-        </div>
+              <!-- Column 2: Registers -->
+              <div class="flex flex-col gap-4">
+                <div id="pc" class="component register">
+                  <span class="component-label text-lg"
+                    >Program Counter (PC)</span
+                  >
+                  <span id="pc-value" class="component-value">0</span>
+                </div>
+                <div id="mar" class="component register">
+                  <span class="component-label text-lg"
+                    >Memory Addr Reg (MAR)</span
+                  >
+                  <span id="mar-value" class="component-value"></span>
+                </div>
+                <div id="mdr" class="component register">
+                  <span class="component-label text-lg"
+                    >Memory Data Reg (MDR)</span
+                  >
+                  <span id="mdr-value" class="component-value"></span>
+                </div>
+                <div id="cir" class="component register">
+                  <span class="component-label text-lg"
+                    >Current Inst Reg (CIR)</span
+                  >
+                  <span id="cir-value" class="component-value"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Memory (RAM) Block -->
+          <div class="md:col-span-1 bg-gray-800 p-6 rounded-lg shadow-xl">
+            <h3
+              class="text-xl font-semibold mb-4 text-center border-b border-gray-600 pb-2"
+            >
+              Memory (RAM)
+            </h3>
+            <div
+              id="memory-container"
+              class="bg-gray-700 rounded-lg overflow-hidden"
+            >
+              <!-- Memory slots will be generated by JS -->
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-
-            // --- DOM Elements ---
-            const btnStep = document.getElementById('btn-step');
-            const btnRun = document.getElementById('btn-run');
-            const btnReset = document.getElementById('btn-reset');
-            
-            const currentPhaseEl = document.getElementById('current-phase');
-            const stepDescriptionEl = document.getElementById('step-description');
-            
-            const pcValueEl = document.getElementById('pc-value');
-            const marValueEl = document.getElementById('mar-value');
-            const mdrValueEl = document.getElementById('mdr-value');
-            const cirValueEl = document.getElementById('cir-value');
-            const accValueEl = document.getElementById('acc-value');
-            
-            const cuEl = document.getElementById('cu');
-            const aluEl = document.getElementById('alu');
-            
-            const memoryContainer = document.getElementById('memory-container');
-
-            // --- Initial State ---
-            const MEMORY_SIZE = 16;
-            const initialMemory = [
-                "LOAD 5", "ADD 6", "STO 7", "HLT",    // 0-3
-                "",       "12",    "8",     "",       // 4-7
-                "",       "",      "",      "",       // 8-11
-                "",       "",      "",      ""        // 12-15
-            ];
-            
-            let memory = [];
-            let registers = {};
-            let currentState = 'idle';
-            let decodedInstruction = { opcode: null, operand: null };
-            let isRunning = false;
-            let runTimer = null;
-            const runSpeed = 1000; // 1 second per step
-
-            // --- Core Functions ---
-
-            /**
-             * Initializes or resets the simulation to its starting state.
-             */
-            function reset() {
-                if (runTimer) {
-                    clearInterval(runTimer);
-                    runTimer = null;
-                }
-                isRunning = false;
-
-                memory = [...initialMemory];
-                registers = {
-                    pc: 0,
-                    mar: '',
-                    mdr: '',
-                    cir: '',
-                    acc: ''
-                };
-                currentState = 'idle';
-                decodedInstruction = { opcode: null, operand: null };
-                
-                initMemoryUI();
-                updateUI();
-                
-                currentPhaseEl.textContent = 'IDLE';
-                stepDescriptionEl.textContent = "Click 'Step' or 'Run' to begin the simulation.";
-                
-                btnStep.disabled = false;
-                btnRun.disabled = false;
-                btnRun.textContent = 'Run';
-            }
-
-            /**
-             * Generates the memory slots in the UI.
-             */
-            function initMemoryUI() {
-                memoryContainer.innerHTML = '';
-                for (let i = 0; i < MEMORY_SIZE; i++) {
-                    const slot = document.createElement('div');
-                    slot.className = 'memory-slot';
-                    slot.id = `mem-${i}`;
-                    
-                    const addr = document.createElement('span');
-                    addr.className = 'memory-addr';
-                    addr.textContent = `${i}:`;
-                    
-                    const val = document.createElement('span');
-                    val.className = 'memory-val';
-                    val.id = `mem-val-${i}`;
-                    val.textContent = memory[i];
-                    
-                    slot.appendChild(addr);
-                    slot.appendChild(val);
-                    memoryContainer.appendChild(slot);
-                }
-            }
-
-            /**
-             * Updates all UI elements to reflect the current state.
-             */
-            function updateUI() {
-                pcValueEl.textContent = registers.pc;
-                marValueEl.textContent = registers.mar;
-                mdrValueEl.textContent = registers.mdr;
-                cirValueEl.textContent = registers.cir;
-                accValueEl.textContent = registers.acc;
-
-                // Update memory UI
-                for (let i = 0; i < MEMORY_SIZE; i++) {
-                    const memValEl = document.getElementById(`mem-val-${i}`);
-                    if (memValEl.textContent !== memory[i]) {
-                         memValEl.textContent = memory[i];
-                    }
-                }
-                
-                // Update Run/Pause button text
-                btnRun.textContent = isRunning ? 'Pause' : 'Run';
-            }
-
-            /**
-             * Removes all highlight classes from components.
-             */
-            function clearHighlights() {
-                const components = document.querySelectorAll('.component, .memory-slot');
-                components.forEach(el => {
-                    el.classList.remove('highlight', 'highlight-active');
-                });
-            }
-
-            /**
-             * Highlights a specific set of components.
-             * @param {string[]} ids - Array of element IDs to highlight.
-             * @param {string} [className='highlight'] - The highlight class to apply.
-             */
-            function highlight(ids, className = 'highlight') {
-                ids.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) {
-                        el.classList.add(className);
-                    }
-                });
-            }
-            
-            /**
-             * Toggles the 'Run' state.
-             */
-            function toggleRun() {
-                isRunning = !isRunning;
-                if (isRunning) {
-                    step(); // Run the first step immediately
-                    runTimer = setInterval(step, runSpeed);
-                } else {
-                    if (runTimer) {
-                        clearInterval(runTimer);
-                        runTimer = null;
-                    }
-                }
-                updateUI(); // Update button text
-            }
-
-            /**
-             * Executes the next step in the FDE cycle state machine.
-             */
-            function step() {
-                clearHighlights();
-                
-                switch (currentState) {
-                    
-                    case 'idle':
-                        currentState = 'fetch-1';
-                        // Immediately call the next step
-                        step(); 
-                        break;
-                    
-                    // --- FETCH PHASE ---
-                    
-                    case 'fetch-1':
-                        currentPhaseEl.textContent = 'FETCH';
-                        // 1. PC -> MAR
-                        registers.mar = registers.pc;
-                        stepDescriptionEl.textContent = "The Program Counter (PC) holds the address of the next instruction (" + registers.pc + "). This address is copied to the Memory Address Register (MAR).";
-                        highlight(['pc', 'mar']);
-                        currentState = 'fetch-2';
-                        break;
-                        
-                    case 'fetch-2':
-                        // 2. RAM[MAR] -> MDR
-                        // Note: We don't check cache in this simplified model as per the plan
-                        registers.mdr = memory[registers.mar];
-                        stepDescriptionEl.textContent = "The instruction at memory address " + registers.mar + " ('" + registers.mdr + "') is fetched from RAM and copied to the Memory Data Register (MDR).";
-                        highlight(['mar', 'mdr', `mem-${registers.mar}`]);
-                        currentState = 'fetch-3';
-                        break;
-                        
-                    case 'fetch-3':
-                        // 3. MDR -> CIR
-                        registers.cir = registers.mdr;
-                        stepDescriptionEl.textContent = "The instruction ('" + registers.cir + "') is transferred from the MDR to the Current Instruction Register (CIR).";
-                        highlight(['mdr', 'cir']);
-                        currentState = 'fetch-4';
-                        break;
-                        
-                    case 'fetch-4':
-                        // 4. PC++
-                        registers.pc++;
-                        stepDescriptionEl.textContent = "The Program Counter (PC) is incremented to " + registers.pc + ", pointing to the next instruction.";
-                        highlight(['pc']);
-                        currentState = 'decode-1';
-                        break;
-                        
-                    // --- DECODE PHASE ---
-                    
-                    case 'decode-1':
-                        currentPhaseEl.textContent = 'DECODE';
-                        // 1. CU decodes CIR
-                        const instruction = registers.cir.split(' ');
-                        decodedInstruction.opcode = instruction[0];
-                        decodedInstruction.operand = instruction[1] ? parseInt(instruction[1]) : null;
-
-                        stepDescriptionEl.textContent = "The Control Unit (CU) decodes the instruction in the CIR ('" + registers.cir + "').";
-                        highlight(['cir', 'cu'], 'highlight-active');
-                        
-                        // Branch to next state based on opcode
-                        switch (decodedInstruction.opcode) {
-                            case 'LOAD':
-                            case 'ADD':
-                            case 'STO':
-                                stepDescriptionEl.textContent += " It's an instruction ('" + decodedInstruction.opcode + "') that requires data/address (" + decodedInstruction.operand + ").";
-                                currentState = 'decode-2-addr';
-                                break;
-                            case 'HLT':
-                                stepDescriptionEl.textContent += " It is a 'HLT' (Halt) instruction.";
-                                currentState = 'execute-hlt-1';
-                                break;
-                            default:
-                                stepDescriptionEl.textContent = "Error: Unknown instruction '" + registers.cir + "'. Resetting.";
-                                currentState = 'idle';
-                        }
-                        break;
-                        
-                    case 'decode-2-addr':
-                        // 2. Operand (address) -> MAR
-                        registers.mar = decodedInstruction.operand;
-                        stepDescriptionEl.textContent = "The address part of the instruction (" + registers.mar + ") is copied to the MAR to fetch/store data.";
-                        highlight(['cir', 'cu', 'mar'], 'highlight-active');
-                        
-                        // Branch to execute phase
-                        switch (decodedInstruction.opcode) {
-                            case 'LOAD': currentState = 'execute-load-1'; break;
-                            case 'ADD':  currentState = 'execute-add-1';  break;
-                            case 'STO':  currentState = 'execute-sto-1';  break;
-                        }
-                        break;
-
-                    // --- EXECUTE PHASE ---
-
-                    // LOAD
-                    case 'execute-load-1':
-                        currentPhaseEl.textContent = 'EXECUTE';
-                        // 1. RAM[MAR] -> MDR
-                        registers.mdr = memory[registers.mar];
-                        stepDescriptionEl.textContent = "The data at memory address " + registers.mar + " ('" + registers.mdr + "') is fetched from RAM into the MDR.";
-                        highlight(['mar', 'mdr', `mem-${registers.mar}`]);
-                        currentState = 'execute-load-2';
-                        break;
-                    
-                    case 'execute-load-2':
-                        // 2. MDR -> ACC
-                        registers.acc = registers.mdr;
-                        stepDescriptionEl.textContent = "The data ('" + registers.acc + "') is copied from the MDR to the Accumulator (ACC).";
-                        highlight(['mdr', 'acc']);
-                        currentState = 'fetch-1'; // End of cycle
-                        break;
-                        
-                    // ADD
-                    case 'execute-add-1':
-                        currentPhaseEl.textContent = 'EXECUTE';
-                        // 1. RAM[MAR] -> MDR
-                        registers.mdr = memory[registers.mar];
-                        stepDescriptionEl.textContent = "The data at memory address " + registers.mar + " ('" + registers.mdr + "') is fetched from RAM into the MDR.";
-                        highlight(['mar', 'mdr', `mem-${registers.mar}`]);
-                        currentState = 'execute-add-2';
-                        break;
-                        
-                    case 'execute-add-2':
-                        // 2. ACC + MDR -> ACC (via ALU)
-                        const val1 = parseInt(registers.acc);
-                        const val2 = parseInt(registers.mdr);
-                        registers.acc = val1 + val2;
-                        stepDescriptionEl.textContent = "The ALU adds the value in the ACC (" + val1 + ") and the MDR (" + val2 + "). The result (" + registers.acc + ") is stored back in the Accumulator.";
-                        highlight(['acc', 'mdr', 'alu'], 'highlight-active');
-                        currentState = 'fetch-1'; // End of cycle
-                        break;
-
-                    // STO
-                    case 'execute-sto-1':
-                        currentPhaseEl.textContent = 'EXECUTE';
-                        // 1. ACC -> MDR
-                        registers.mdr = registers.acc;
-                        stepDescriptionEl.textContent = "The value from the Accumulator (" + registers.mdr + ") is copied to the MDR, preparing to store it.";
-                        highlight(['acc', 'mdr']);
-                        currentState = 'execute-sto-2';
-                        break;
-
-                    case 'execute-sto-2':
-                        // 2. MDR -> RAM[MAR]
-                        memory[registers.mar] = registers.mdr.toString(); // Store as string
-                        stepDescriptionEl.textContent = "The value in the MDR (" + registers.mdr + ") is stored into memory at address " + registers.mar + ".";
-                        highlight(['mdr', 'mar', `mem-${registers.mar}`]);
-                        currentState = 'fetch-1'; // End of cycle
-                        break;
-                        
-                    // HLT
-                    case 'execute-hlt-1':
-                        currentPhaseEl.textContent = 'HALTED';
-                        stepDescriptionEl.textContent = "Program execution is stopped by the HLT instruction. Click 'Reset' to start over.";
-                        highlight(['cir', 'cu'], 'highlight-active');
-                        
-                        // Stop simulation
-                        if (runTimer) {
-                            clearInterval(runTimer);
-                            runTimer = null;
-                        }
-                        isRunning = false;
-                        btnStep.disabled = true;
-                        btnRun.disabled = true;
-                        currentState = 'halted';
-                        break;
-                        
-                    case 'halted':
-                        // Do nothing if halted
-                        break;
-                }
-                
-                // Update all UI values at the end of the step
-                updateUI();
-            }
-
-            // --- Event Listeners ---
-            btnStep.addEventListener('click', () => {
-                if (!isRunning) {
-                    step();
-                }
-            });
-            
-            btnRun.addEventListener('click', toggleRun);
-            btnReset.addEventListener('click', reset);
-
-            // --- Initial Call ---
-            reset();
-        });
-    </script>
-</body>
+    <script src="app.js"></script>
+  </body>
 </html>

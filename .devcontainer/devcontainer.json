@@ -34,7 +34,8 @@
         "dbaeumer.vscode-eslint",
         "bradlc.vscode-tailwindcss",
         "ritwickdey.liveserver",
-        "ms-vscode.makefile-tools"
+        "ms-vscode.makefile-tools",
+        "ms-playwright.playwright"
       ]
     }
   },
