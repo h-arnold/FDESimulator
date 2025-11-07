@@ -6,7 +6,8 @@
 
 ### Purpose
 
-This single-file HTML/CSS/JS applet provides a step-by-step visual demonstration of:
+This applet is located in `fde-simulator/fde.html` with its supporting files `app.js` and `styles.css` in the same `fde-simulator/` folder. It provides a step-by-step visual demonstration of:
+
 - CPU components (PC, MAR, MDR, CIR, ACC registers)
 - Control Unit (CU) and Arithmetic Logic Unit (ALU)
 - Data movement between RAM and CPU registers
@@ -29,34 +30,42 @@ The applet runs a simple pre-loaded program with instructions (LOAD, ADD, STO, H
 When making **any code changes** to this project, use the integrated Playwright testing tool to verify the output:
 
 ### Quick Setup (if not already done)
+
 ```bash
 npm install
 npx playwright install chromium --with-deps
 ```
 
 ### Start the Test Server
+
 ```bash
 npm start
 ```
+
 The server will listen on `http://localhost:3000`.
 
 ### Run Manual Tests
 
 **Navigate to the applet and verify page structure:**
+
 ```bash
 npm run client -- navigate "http://localhost:3000" | jq -r .title
 ```
+
 Expected: Should include page title and snippet containing CPU, registers, or FDE-related text.
 
 **Capture a screenshot for visual inspection:**
+
 ```bash
 npm run client -- screenshot "http://localhost:3000" test-screenshot.png
 ```
+
 Then inspect the saved PNG file.
 
 ### Automated Testing Pattern
 
 For complex changes, create a shell script (e.g., `scripts/test-changes.sh`) that:
+
 1. Starts the server in the background
 2. Uses `npm run client -- navigate` to assert page state (title, content)
 3. Uses `npm run client -- screenshot` to save visual snapshots
@@ -64,6 +73,7 @@ For complex changes, create a shell script (e.g., `scripts/test-changes.sh`) tha
 5. Kills the server and reports pass/fail
 
 **Example assertion:**
+
 ```bash
 OUT=$(npm run client -- navigate "http://localhost:3000")
 if ! echo "$OUT" | jq -e '.title | contains("FDE")' > /dev/null; then
@@ -89,6 +99,12 @@ fi
 
 - **Specification**: See `docs/spec.md` for detailed FDE cycle logic, sample program, and UI layout requirements
 - **Playwright Setup Guide**: See `docs/playwright-instructions.md` for troubleshooting, CI integration, and advanced usage
+
+## Simulator files
+
+- `fde-simulator/fde.html` — simulator HTML file (loads `app.js` and `styles.css`)
+- `fde-simulator/app.js` — main simulator logic and UI wiring
+- `fde-simulator/styles.css` — styles for the simulator UI
 
 ## Code Style
 

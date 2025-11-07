@@ -1,28 +1,69 @@
-# Playwright MCP-style tools for FDESimulator
+# Playwright MCP-style server for FDESimulator
 
-This folder contains the small Playwright-based server and helper scripts used for automated navigation and screenshots for the FDESimulator applet.
+This adds a small Playwright-based server that exposes simple endpoints to navigate or screenshot pages. It's useful for automated page navigation tasks from within the dev container.
 
-Files included here:
+Files added:
 
 - `server.js` — Express server that launches Playwright and exposes `/navigate` and `/screenshot`.
-- `playwright-client.js` — CLI client that calls the server endpoints (formerly `scripts/playwright-client.js`).
-- `interactive-test.js` — small Playwright script to open `fde.html` and perform manual interactions for visual testing.
+- `package.json` — node project manifest with scripts.
 
-Quick start (from repo root):
+Quick start
+
+1. Install Node dependencies (run in the repository root):
 
 ```bash
+cd /workspaces/FDESimulator
 npm install
+```
+
+2. Install the Chromium browser used by Playwright:
+
+```bash
 npx playwright install chromium
+```
+
+Note: Browser binaries can be large and may take a few minutes to download.
+
+3. Start the server:
+
+```bash
 npm start
 ```
 
-Then use the client:
+4. Test navigation (in another terminal):
 
 ```bash
-npm run client -- navigate "http://localhost:3000"
-npm run client -- screenshot "http://localhost:3000" example.png
+curl "http://localhost:3000/navigate?url=http://example.com"
 ```
 
-Notes:
+When testing the FDE simulator, point the navigator at the simulator path, for example:
 
-- The `docs/playwright-instructions.md` document contains more detailed usage and CI suggestions. This README is intentionally short and points at the canonical `docs/` entry.
+```bash
+curl "http://localhost:3000/navigate?url=http://localhost:3000/fde-simulator/fde.html"
+```
+
+CLI client
+
+You can also use the included CLI client which interacts with the server:
+
+```bash
+# navigate and pretty-print JSON
+npm run client -- navigate "http://example.com"
+
+# save a screenshot
+npm run client -- screenshot "http://example.com" example.png
+```
+
+5. Request a screenshot:
+
+```bash
+curl --output example.png "http://localhost:3000/screenshot?url=http://example.com"
+```
+
+Security & notes
+
+- This server is minimal and not production hardened. Use behind a firewall or only in trusted environments.
+- The server launches a browser in headless mode and creates new contexts per request to isolate pages.
+- If you need authentication, cookies or more complex flows, extend `server.js` accordingly.
+
+If you'd like, I can also wire this to a formal MCP protocol implementation (if you have a spec) or restrict origins and add an API key.

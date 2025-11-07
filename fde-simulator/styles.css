@@ -1,0 +1,95 @@
+/* Use Inter font, Tailwind's default sans-serif */
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  background-color: #111827; /* bg-gray-900 */
+  color: #f3f4f6; /* text-gray-100 */
+}
+
+/* Base style for all simulation components */
+.component {
+  border: 2px solid #4b5563; /* border-gray-600 */
+  background-color: #374151; /* bg-gray-700 */
+  border-radius: 0.5rem; /* rounded-lg */
+  padding: 1rem; /* p-4 */
+  transition: all 0.2s ease-in-out;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Style for register components */
+.component.register {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem; /* p-3 p-4 */
+}
+
+.component-label {
+  font-weight: 600; /* font-semibold */
+  color: #d1d5db; /* text-gray-300 */
+  margin-right: 1rem;
+  font-size: 0.875rem; /* text-sm */
+}
+
+.component-value {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 700; /* font-bold */
+  color: #f9fafb; /* text-gray-50 */
+  background-color: #1f2937; /* bg-gray-800 */
+  padding: 0.25rem 0.75rem; /* p-1 px-3 */
+  border-radius: 0.375rem; /* rounded-md */
+  min-width: 80px;
+  text-align: right;
+}
+
+/* Style for Memory slots */
+.memory-slot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem; /* p-2 */
+  border-bottom: 1px solid #4b5563; /* border-gray-600 */
+  font-family: "Courier New", Courier, monospace;
+  transition: all 0.2s ease-in-out;
+}
+.memory-slot:last-child {
+  border-bottom: none;
+}
+
+.memory-addr {
+  font-weight: 600; /* font-semibold */
+  color: #9ca3af; /* text-gray-400 */
+  margin-right: 1rem;
+}
+
+.memory-val {
+  font-weight: 700; /* font-bold */
+  color: #e5e7eb; /* text-gray-200 */
+}
+
+/* Highlight class for active components */
+.highlight {
+  background-color: #3b82f6; /* bg-blue-600 */
+  border-color: #93c5fd; /* border-blue-300 */
+  transform: scale(1.03);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+}
+
+/* Special highlight for CU/ALU when active */
+.highlight-active {
+  background-color: #eab308; /* bg-yellow-500 */
+  border-color: #fde047; /* border-yellow-300 */
+  transform: scale(1.03);
+  box-shadow: 0 0 15px rgba(234, 179, 8, 0.5);
+}
+
+/* Disabled button style */
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
