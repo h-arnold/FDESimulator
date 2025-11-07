@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "install-browsers": "npx playwright install chromium"
+    "install-browsers": "npx playwright install chromium",
+    "client": "node scripts/playwright-client.js"
   },
   "author": "h-arnold",
   "license": "MIT",

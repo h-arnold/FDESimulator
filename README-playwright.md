@@ -35,6 +35,18 @@ npm start
 curl "http://localhost:3000/navigate?url=http://example.com"
 ```
 
+CLI client
+
+You can also use the included CLI client which interacts with the server:
+
+```bash
+# navigate and pretty-print JSON
+npm run client -- navigate "http://example.com"
+
+# save a screenshot
+npm run client -- screenshot "http://example.com" example.png
+```
+
 5. Request a screenshot:
 
 ```bash
