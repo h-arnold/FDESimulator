@@ -16,10 +16,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3
         with:
           # publish the contents of the fde-simulator folder as the site root
           path: "fde-simulator"
 
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4
