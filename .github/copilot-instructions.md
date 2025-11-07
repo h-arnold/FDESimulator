@@ -74,8 +74,8 @@ fi
 
 ### Files Reference
 
-- **`server.js`**: Express server that launches Playwright and exposes `/navigate` and `/screenshot` endpoints
-- **`scripts/playwright-client.js`**: CLI client for calling server endpoints
+- **`playwright/server.js`**: Express server that launches Playwright and exposes `/navigate` and `/screenshot` endpoints
+- **`playwright/playwright-client.js`**: CLI client for calling server endpoints
 - **`docs/playwright-instructions.md`**: Full testing documentation and troubleshooting guide
 
 ## When to Test

@@ -2,11 +2,11 @@
   "name": "fde-playwright-mcp",
   "version": "0.1.0",
   "description": "Lightweight Playwright-based MCP-style server for FDESimulator",
-  "main": "server.js",
+  "main": "playwright/server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node playwright/server.js",
     "install-browsers": "npx playwright install chromium",
-    "client": "node scripts/playwright-client.js"
+    "client": "node playwright/playwright-client.js"
   },
   "author": "h-arnold",
   "license": "MIT",
