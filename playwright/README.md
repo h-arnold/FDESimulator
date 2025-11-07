@@ -39,7 +39,7 @@ curl "http://localhost:3000/navigate?url=http://example.com"
 When testing the FDE simulator, point the navigator at the simulator path, for example:
 
 ```bash
-curl "http://localhost:3000/navigate?url=http://localhost:3000/fde-simulator/fde.html"
+curl "http://localhost:3000/navigate?url=http://localhost:3000/fde-simulator/index.html"
 ```
 
 CLI client

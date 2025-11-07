@@ -12,7 +12,8 @@ const path = require("path");
   });
   const page = await context.newPage();
 
-  const fileUrl = "file://" + path.resolve(__dirname, "..", "fde.html");
+  const fileUrl =
+    "file://" + path.resolve(__dirname, "..", "fde-simulator", "index.html");
   console.log("Navigating to", fileUrl);
   await page.goto(fileUrl, { waitUntil: "domcontentloaded" });
 

@@ -6,7 +6,7 @@
 
 ### Purpose
 
-This applet is located in `fde-simulator/fde.html` with its supporting files `app.js` and `styles.css` in the same `fde-simulator/` folder. It provides a step-by-step visual demonstration of:
+This applet is located in `fde-simulator/index.html` with its supporting files `app.js` and `styles.css` in the same `fde-simulator/` folder. It provides a step-by-step visual demonstration of:
 
 - CPU components (PC, MAR, MDR, CIR, ACC registers)
 - Control Unit (CU) and Arithmetic Logic Unit (ALU)
@@ -102,7 +102,7 @@ fi
 
 ## Simulator files
 
-- `fde-simulator/fde.html` — simulator HTML file (loads `app.js` and `styles.css`)
+- `fde-simulator/index.html` — simulator HTML file (loads `app.js` and `styles.css`)
 - `fde-simulator/app.js` — main simulator logic and UI wiring
 - `fde-simulator/styles.css` — styles for the simulator UI
 

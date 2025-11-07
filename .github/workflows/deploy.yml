@@ -1,0 +1,25 @@
+name: Deploy FDE Simulator to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          # publish the contents of the fde-simulator folder as the site root
+          path: "fde-simulator"
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v1
