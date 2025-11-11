@@ -143,9 +143,31 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Clear bus highlights
-    addressBusEl.classList.remove("bus-active");
-    dataBusEl.classList.remove("bus-active");
-    controlBusEl.classList.remove("bus-active");
+    addressBusEl.classList.remove(
+      "bus-active",
+      "bus-flow-right",
+      "bus-flow-left"
+    );
+    dataBusEl.classList.remove("bus-active", "bus-flow-right", "bus-flow-left");
+    controlBusEl.classList.remove(
+      "bus-active",
+      "bus-flow-right",
+      "bus-flow-left"
+    );
+  }
+
+  /**
+   * Activates a bus with directional flow animation.
+   * @param {HTMLElement} busElement - The bus element to activate.
+   * @param {string} direction - The flow direction: 'right' (CPU->RAM) or 'left' (RAM->CPU).
+   */
+  function activateBus(busElement, direction) {
+    busElement.classList.add("bus-active");
+    if (direction === "right") {
+      busElement.classList.add("bus-flow-right");
+    } else if (direction === "left") {
+      busElement.classList.add("bus-flow-left");
+    }
   }
 
   /**
@@ -213,8 +235,8 @@ document.addEventListener("DOMContentLoaded", () => {
           registers.mar +
           ") is sent to RAM via the address bus. Control signals are sent to request a read operation.";
         highlight(["mar", `mem-${registers.mar}`]);
-        addressBusEl.classList.add("bus-active");
-        controlBusEl.classList.add("bus-active");
+        activateBus(addressBusEl, "right"); // CPU -> RAM
+        activateBus(controlBusEl, "right"); // CPU -> RAM
         currentState = "fetch-3";
         break;
 
@@ -228,9 +250,9 @@ document.addEventListener("DOMContentLoaded", () => {
           registers.mdr +
           "') travels from RAM to the Memory Data Register (MDR) via the data bus.";
         highlight(["mdr", `mem-${registers.mar}`]);
-        addressBusEl.classList.add("bus-active");
-        dataBusEl.classList.add("bus-active");
-        controlBusEl.classList.add("bus-active");
+        activateBus(addressBusEl, "right"); // Address held
+        activateBus(dataBusEl, "left"); // RAM -> CPU
+        activateBus(controlBusEl, "right"); // Control held
         currentState = "fetch-4";
         break;
 
@@ -332,8 +354,8 @@ document.addEventListener("DOMContentLoaded", () => {
           registers.mar +
           ") is sent to RAM via the address bus. Control signals request a read operation.";
         highlight(["mar", `mem-${registers.mar}`]);
-        addressBusEl.classList.add("bus-active");
-        controlBusEl.classList.add("bus-active");
+        activateBus(addressBusEl, "right"); // CPU -> RAM
+        activateBus(controlBusEl, "right"); // CPU -> RAM
         currentState = "execute-load-2";
         break;
 
@@ -347,9 +369,9 @@ document.addEventListener("DOMContentLoaded", () => {
           registers.mdr +
           "') travels from RAM to the MDR via the data bus.";
         highlight(["mdr", `mem-${registers.mar}`]);
-        addressBusEl.classList.add("bus-active");
-        dataBusEl.classList.add("bus-active");
-        controlBusEl.classList.add("bus-active");
+        activateBus(addressBusEl, "right"); // Address held
+        activateBus(dataBusEl, "left"); // RAM -> CPU
+        activateBus(controlBusEl, "right"); // Control held
         currentState = "execute-load-3";
         break;
 
@@ -373,8 +395,8 @@ document.addEventListener("DOMContentLoaded", () => {
           registers.mar +
           ") is sent to RAM via the address bus. Control signals request a read operation.";
         highlight(["mar", `mem-${registers.mar}`]);
-        addressBusEl.classList.add("bus-active");
-        controlBusEl.classList.add("bus-active");
+        activateBus(addressBusEl, "right"); // CPU -> RAM
+        activateBus(controlBusEl, "right"); // CPU -> RAM
         currentState = "execute-add-2";
         break;
 
@@ -388,9 +410,9 @@ document.addEventListener("DOMContentLoaded", () => {
           registers.mdr +
           "') travels from RAM to the MDR via the data bus.";
         highlight(["mdr", `mem-${registers.mar}`]);
-        addressBusEl.classList.add("bus-active");
-        dataBusEl.classList.add("bus-active");
-        controlBusEl.classList.add("bus-active");
+        activateBus(addressBusEl, "right"); // Address held
+        activateBus(dataBusEl, "left"); // RAM -> CPU
+        activateBus(controlBusEl, "right"); // Control held
         currentState = "execute-add-3";
         break;
 
@@ -431,8 +453,8 @@ document.addEventListener("DOMContentLoaded", () => {
           registers.mar +
           ") is sent via the address bus, and control signals request a write operation.";
         highlight(["mar", "mdr", `mem-${registers.mar}`]);
-        addressBusEl.classList.add("bus-active");
-        controlBusEl.classList.add("bus-active");
+        activateBus(addressBusEl, "right"); // CPU -> RAM
+        activateBus(controlBusEl, "right"); // CPU -> RAM
         currentState = "execute-sto-3";
         break;
 
@@ -446,9 +468,9 @@ document.addEventListener("DOMContentLoaded", () => {
           registers.mar +
           ".";
         highlight(["mdr", `mem-${registers.mar}`]);
-        addressBusEl.classList.add("bus-active");
-        dataBusEl.classList.add("bus-active");
-        controlBusEl.classList.add("bus-active");
+        activateBus(addressBusEl, "right"); // Address held
+        activateBus(dataBusEl, "right"); // CPU -> RAM (writing!)
+        activateBus(controlBusEl, "right"); // Control held
         currentState = "fetch-1"; // End of cycle
         break;
 

@@ -154,6 +154,29 @@ button:disabled {
   animation: pulse-bus 0.5s ease-in-out;
 }
 
+/* Directional flow animations */
+.bus.bus-active.bus-flow-right .bus-line {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    currentColor 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: flow-right 1s linear infinite;
+}
+
+.bus.bus-active.bus-flow-left .bus-line {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    currentColor 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: flow-left 1s linear infinite;
+}
+
 @keyframes pulse-bus {
   0%,
   100% {
@@ -161,5 +184,23 @@ button:disabled {
   }
   50% {
     opacity: 0.6;
+  }
+}
+
+@keyframes flow-right {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}
+
+@keyframes flow-left {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
   }
 }
