@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body class="h-full flex items-center justify-center p-4 sm:p-6 lg:p-8">
+  <body class="min-h-screen flex items-start justify-center p-4 sm:p-6 lg:p-8">
     <div class="w-full max-w-7xl mx-auto">
       <header class="text-center mb-6">
         <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">
@@ -20,22 +20,24 @@
       <div class="flex flex-col gap-6">
         <!-- Control Panel -->
         <section class="bg-gray-800 p-4 rounded-lg shadow-xl">
-          <div class="flex flex-wrap items-center justify-center gap-4">
+          <div
+            class="flex flex-wrap items-center justify-center gap-3 sm:gap-4"
+          >
             <button
               id="btn-step"
-              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 sm:px-6 rounded-lg transition-colors"
             >
               Step
             </button>
             <button
               id="btn-run"
-              class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+              class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 sm:px-6 rounded-lg transition-colors"
             >
               Run
             </button>
             <button
               id="btn-reset"
-              class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+              class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 sm:px-6 rounded-lg transition-colors"
             >
               Reset
             </button>
