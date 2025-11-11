@@ -207,35 +207,46 @@ document.addEventListener("DOMContentLoaded", () => {
         break;
 
       case "fetch-2":
-        // 2. RAM[MAR] -> MDR
-        // Note: We don't check cache in this simplified model as per the plan
+        // 2. Address sent on address bus, control signals sent
+        stepDescriptionEl.textContent =
+          "The address (" +
+          registers.mar +
+          ") is sent to RAM via the address bus. Control signals are sent to request a read operation.";
+        highlight(["mar", `mem-${registers.mar}`]);
+        addressBusEl.classList.add("bus-active");
+        controlBusEl.classList.add("bus-active");
+        currentState = "fetch-3";
+        break;
+
+      case "fetch-3":
+        // 3. RAM[MAR] -> MDR (data travels on data bus)
         registers.mdr = memory[registers.mar];
         stepDescriptionEl.textContent =
           "The instruction at memory address " +
           registers.mar +
           " ('" +
           registers.mdr +
-          "') is fetched from RAM and copied to the Memory Data Register (MDR).";
-        highlight(["mar", "mdr", `mem-${registers.mar}`]);
+          "') travels from RAM to the Memory Data Register (MDR) via the data bus.";
+        highlight(["mdr", `mem-${registers.mar}`]);
         addressBusEl.classList.add("bus-active");
         dataBusEl.classList.add("bus-active");
         controlBusEl.classList.add("bus-active");
-        currentState = "fetch-3";
+        currentState = "fetch-4";
         break;
 
-      case "fetch-3":
-        // 3. MDR -> CIR
+      case "fetch-4":
+        // 4. MDR -> CIR
         registers.cir = registers.mdr;
         stepDescriptionEl.textContent =
           "The instruction ('" +
           registers.cir +
           "') is transferred from the MDR to the Current Instruction Register (CIR).";
         highlight(["mdr", "cir"]);
-        currentState = "fetch-4";
+        currentState = "fetch-5";
         break;
 
-      case "fetch-4":
-        // 4. PC++
+      case "fetch-5":
+        // 5. PC++
         registers.pc++;
         stepDescriptionEl.textContent =
           "The Program Counter (PC) is incremented to " +
@@ -293,9 +304,8 @@ document.addEventListener("DOMContentLoaded", () => {
         stepDescriptionEl.textContent =
           "The address part of the instruction (" +
           registers.mar +
-          ") is copied to the MAR to fetch/store data.";
+          ") is copied to the MAR, ready to access memory.";
         highlight(["cir", "cu", "mar"], "highlight-active");
-        addressBusEl.classList.add("bus-active");
 
         // Branch to execute phase
         switch (decodedInstruction.opcode) {
@@ -316,23 +326,35 @@ document.addEventListener("DOMContentLoaded", () => {
       // LOAD
       case "execute-load-1":
         currentPhaseEl.textContent = "EXECUTE";
-        // 1. RAM[MAR] -> MDR
+        // 1. Address sent to RAM, read requested
+        stepDescriptionEl.textContent =
+          "The address (" +
+          registers.mar +
+          ") is sent to RAM via the address bus. Control signals request a read operation.";
+        highlight(["mar", `mem-${registers.mar}`]);
+        addressBusEl.classList.add("bus-active");
+        controlBusEl.classList.add("bus-active");
+        currentState = "execute-load-2";
+        break;
+
+      case "execute-load-2":
+        // 2. RAM[MAR] -> MDR (data travels on data bus)
         registers.mdr = memory[registers.mar];
         stepDescriptionEl.textContent =
           "The data at memory address " +
           registers.mar +
           " ('" +
           registers.mdr +
-          "') is fetched from RAM into the MDR.";
-        highlight(["mar", "mdr", `mem-${registers.mar}`]);
+          "') travels from RAM to the MDR via the data bus.";
+        highlight(["mdr", `mem-${registers.mar}`]);
         addressBusEl.classList.add("bus-active");
         dataBusEl.classList.add("bus-active");
         controlBusEl.classList.add("bus-active");
-        currentState = "execute-load-2";
+        currentState = "execute-load-3";
         break;
 
-      case "execute-load-2":
-        // 2. MDR -> ACC
+      case "execute-load-3":
+        // 3. MDR -> ACC
         registers.acc = registers.mdr;
         stepDescriptionEl.textContent =
           "The data ('" +
@@ -345,23 +367,35 @@ document.addEventListener("DOMContentLoaded", () => {
       // ADD
       case "execute-add-1":
         currentPhaseEl.textContent = "EXECUTE";
-        // 1. RAM[MAR] -> MDR
+        // 1. Address sent to RAM, read requested
+        stepDescriptionEl.textContent =
+          "The address (" +
+          registers.mar +
+          ") is sent to RAM via the address bus. Control signals request a read operation.";
+        highlight(["mar", `mem-${registers.mar}`]);
+        addressBusEl.classList.add("bus-active");
+        controlBusEl.classList.add("bus-active");
+        currentState = "execute-add-2";
+        break;
+
+      case "execute-add-2":
+        // 2. RAM[MAR] -> MDR (data travels on data bus)
         registers.mdr = memory[registers.mar];
         stepDescriptionEl.textContent =
           "The data at memory address " +
           registers.mar +
           " ('" +
           registers.mdr +
-          "') is fetched from RAM into the MDR.";
-        highlight(["mar", "mdr", `mem-${registers.mar}`]);
+          "') travels from RAM to the MDR via the data bus.";
+        highlight(["mdr", `mem-${registers.mar}`]);
         addressBusEl.classList.add("bus-active");
         dataBusEl.classList.add("bus-active");
         controlBusEl.classList.add("bus-active");
-        currentState = "execute-add-2";
+        currentState = "execute-add-3";
         break;
 
-      case "execute-add-2":
-        // 2. ACC + MDR -> ACC (via ALU)
+      case "execute-add-3":
+        // 3. ACC + MDR -> ACC (via ALU)
         const val1 = parseInt(registers.acc);
         const val2 = parseInt(registers.mdr);
         registers.acc = val1 + val2;
@@ -385,21 +419,33 @@ document.addEventListener("DOMContentLoaded", () => {
         stepDescriptionEl.textContent =
           "The value from the Accumulator (" +
           registers.mdr +
-          ") is copied to the MDR, preparing to store it.";
+          ") is copied to the MDR, preparing to store it in memory.";
         highlight(["acc", "mdr"]);
         currentState = "execute-sto-2";
         break;
 
       case "execute-sto-2":
-        // 2. MDR -> RAM[MAR]
+        // 2. Address and control signals sent to RAM
+        stepDescriptionEl.textContent =
+          "The address (" +
+          registers.mar +
+          ") is sent via the address bus, and control signals request a write operation.";
+        highlight(["mar", "mdr", `mem-${registers.mar}`]);
+        addressBusEl.classList.add("bus-active");
+        controlBusEl.classList.add("bus-active");
+        currentState = "execute-sto-3";
+        break;
+
+      case "execute-sto-3":
+        // 3. MDR -> RAM[MAR] (data travels on data bus)
         memory[registers.mar] = registers.mdr.toString(); // Store as string
         stepDescriptionEl.textContent =
           "The value in the MDR (" +
           registers.mdr +
-          ") is stored into memory at address " +
+          ") travels via the data bus and is written to memory at address " +
           registers.mar +
           ".";
-        highlight(["mdr", "mar", `mem-${registers.mar}`]);
+        highlight(["mdr", `mem-${registers.mar}`]);
         addressBusEl.classList.add("bus-active");
         dataBusEl.classList.add("bus-active");
         controlBusEl.classList.add("bus-active");
