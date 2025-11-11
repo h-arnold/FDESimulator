@@ -1,4 +1,8 @@
-import { getElements, getMemoryValueElement, getMemorySlotElement } from "./ui.js";
+import {
+  getElements,
+  getMemoryValueElement,
+  getMemorySlotElement,
+} from "./ui.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   // --- DOM Elements ---
