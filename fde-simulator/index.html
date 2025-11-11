@@ -58,10 +58,10 @@
           </p>
         </section>
 
-        <!-- Simulation Area (CPU and Memory) -->
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Simulation Area (CPU, Buses, and Memory) -->
+        <section class="flex flex-col lg:flex-row gap-6 items-stretch">
           <!-- CPU Block -->
-          <div class="md:col-span-2 bg-gray-800 p-6 rounded-lg shadow-xl">
+          <div class="flex-1 bg-gray-800 p-6 rounded-lg shadow-xl">
             <h3
               class="text-xl font-semibold mb-4 text-center border-b border-gray-600 pb-2"
             >
@@ -116,8 +116,32 @@
             </div>
           </div>
 
+          <!-- System Buses -->
+          <div
+            class="flex flex-col justify-center items-center gap-8 px-4 lg:px-8 py-8 min-w-[200px]"
+          >
+            <div class="bus-container">
+              <div id="address-bus" class="bus address-bus">
+                <div class="bus-line"></div>
+              </div>
+              <span class="bus-label">Address Bus</span>
+            </div>
+            <div class="bus-container">
+              <div id="data-bus" class="bus data-bus">
+                <div class="bus-line"></div>
+              </div>
+              <span class="bus-label">Data Bus</span>
+            </div>
+            <div class="bus-container">
+              <div id="control-bus" class="bus control-bus">
+                <div class="bus-line"></div>
+              </div>
+              <span class="bus-label">Control Bus</span>
+            </div>
+          </div>
+
           <!-- Memory (RAM) Block -->
-          <div class="md:col-span-1 bg-gray-800 p-6 rounded-lg shadow-xl">
+          <div class="flex-1 bg-gray-800 p-6 rounded-lg shadow-xl">
             <h3
               class="text-xl font-semibold mb-4 text-center border-b border-gray-600 pb-2"
             >

@@ -16,6 +16,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const cuEl = document.getElementById("cu");
   const aluEl = document.getElementById("alu");
 
+  const addressBusEl = document.getElementById("address-bus");
+  const dataBusEl = document.getElementById("data-bus");
+  const controlBusEl = document.getElementById("control-bus");
+
   const memoryContainer = document.getElementById("memory-container");
 
   // --- Initial State ---
@@ -137,6 +141,11 @@ document.addEventListener("DOMContentLoaded", () => {
     components.forEach((el) => {
       el.classList.remove("highlight", "highlight-active");
     });
+
+    // Clear bus highlights
+    addressBusEl.classList.remove("bus-active");
+    dataBusEl.classList.remove("bus-active");
+    controlBusEl.classList.remove("bus-active");
   }
 
   /**
@@ -208,6 +217,9 @@ document.addEventListener("DOMContentLoaded", () => {
           registers.mdr +
           "') is fetched from RAM and copied to the Memory Data Register (MDR).";
         highlight(["mar", "mdr", `mem-${registers.mar}`]);
+        addressBusEl.classList.add("bus-active");
+        dataBusEl.classList.add("bus-active");
+        controlBusEl.classList.add("bus-active");
         currentState = "fetch-3";
         break;
 
@@ -283,6 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
           registers.mar +
           ") is copied to the MAR to fetch/store data.";
         highlight(["cir", "cu", "mar"], "highlight-active");
+        addressBusEl.classList.add("bus-active");
 
         // Branch to execute phase
         switch (decodedInstruction.opcode) {
@@ -312,6 +325,9 @@ document.addEventListener("DOMContentLoaded", () => {
           registers.mdr +
           "') is fetched from RAM into the MDR.";
         highlight(["mar", "mdr", `mem-${registers.mar}`]);
+        addressBusEl.classList.add("bus-active");
+        dataBusEl.classList.add("bus-active");
+        controlBusEl.classList.add("bus-active");
         currentState = "execute-load-2";
         break;
 
@@ -338,6 +354,9 @@ document.addEventListener("DOMContentLoaded", () => {
           registers.mdr +
           "') is fetched from RAM into the MDR.";
         highlight(["mar", "mdr", `mem-${registers.mar}`]);
+        addressBusEl.classList.add("bus-active");
+        dataBusEl.classList.add("bus-active");
+        controlBusEl.classList.add("bus-active");
         currentState = "execute-add-2";
         break;
 
@@ -381,6 +400,9 @@ document.addEventListener("DOMContentLoaded", () => {
           registers.mar +
           ".";
         highlight(["mdr", "mar", `mem-${registers.mar}`]);
+        addressBusEl.classList.add("bus-active");
+        dataBusEl.classList.add("bus-active");
+        controlBusEl.classList.add("bus-active");
         currentState = "fetch-1"; // End of cycle
         break;
 
