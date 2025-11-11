@@ -224,294 +224,365 @@ document.addEventListener("DOMContentLoaded", () => {
     updateUI(); // Update button text
   }
 
+  // --- FDE Cycle Handler Functions ---
+
+  /**
+   * Initial idle state; transitions to fetch-1.
+   */
+  function handleIdle() {
+    currentState = "fetch-1";
+    step(); // Immediately proceed to fetch
+  }
+
+  // --- FETCH PHASE HANDLERS ---
+
+  /**
+   * Fetch-1: Copy PC to MAR
+   */
+  function handleFetch1() {
+    currentPhaseEl.textContent = "FETCH";
+    registers.mar = registers.pc;
+    stepDescriptionEl.textContent =
+      "The Program Counter (PC) holds the address of the next instruction (" +
+      registers.pc +
+      "). This address is copied to the Memory Address Register (MAR).";
+    highlight(["pc", "mar"]);
+    currentState = "fetch-2";
+  }
+
+  /**
+   * Fetch-2: Send address to RAM via address bus
+   */
+  function handleFetch2() {
+    stepDescriptionEl.textContent =
+      "The address (" +
+      registers.mar +
+      ") is sent to RAM via the address bus. Control signals are sent to request a read operation.";
+    highlight(["mar", `mem-${registers.mar}`]);
+    activateBus(addressBusEl, "left");
+    activateBus(controlBusEl, "left");
+    currentState = "fetch-3";
+  }
+
+  /**
+   * Fetch-3: Transfer data from RAM to MDR via data bus
+   */
+  function handleFetch3() {
+    registers.mdr = memory[registers.mar];
+    stepDescriptionEl.textContent =
+      "The instruction at memory address " +
+      registers.mar +
+      " ('" +
+      registers.mdr +
+      "') travels from RAM to the Memory Data Register (MDR) via the data bus.";
+    highlight(["mdr", `mem-${registers.mar}`]);
+    activateBus(addressBusEl, "left");
+    activateBus(dataBusEl, "right");
+    activateBus(controlBusEl, "left");
+    currentState = "fetch-4";
+  }
+
+  /**
+   * Fetch-4: Transfer instruction from MDR to CIR
+   */
+  function handleFetch4() {
+    registers.cir = registers.mdr;
+    stepDescriptionEl.textContent =
+      "The instruction ('" +
+      registers.cir +
+      "') is transferred from the MDR to the Current Instruction Register (CIR).";
+    highlight(["mdr", "cir"]);
+    currentState = "fetch-5";
+  }
+
+  /**
+   * Fetch-5: Increment PC
+   */
+  function handleFetch5() {
+    registers.pc++;
+    stepDescriptionEl.textContent =
+      "The Program Counter (PC) is incremented to " +
+      registers.pc +
+      ", pointing to the next instruction.";
+    highlight(["pc"]);
+    currentState = "decode-1";
+  }
+
+  // --- DECODE PHASE HANDLERS ---
+
+  /**
+   * Decode-1: Control Unit decodes the instruction
+   */
+  function handleDecode1() {
+    currentPhaseEl.textContent = "DECODE";
+    const instruction = registers.cir.split(" ");
+    decodedInstruction.opcode = instruction[0];
+    decodedInstruction.operand = instruction[1]
+      ? parseInt(instruction[1])
+      : null;
+
+    stepDescriptionEl.textContent =
+      "The Control Unit (CU) decodes the instruction in the CIR ('" +
+      registers.cir +
+      "').";
+    highlight(["cir", "cu"], "highlight-active");
+
+    // Branch based on opcode
+    switch (decodedInstruction.opcode) {
+      case "LOAD":
+      case "ADD":
+      case "STO":
+        stepDescriptionEl.textContent +=
+          " It's an instruction ('" +
+          decodedInstruction.opcode +
+          "') that requires data/address (" +
+          decodedInstruction.operand +
+          ").";
+        currentState = "decode-2-addr";
+        break;
+      case "HLT":
+        stepDescriptionEl.textContent += " It is a 'HLT' (Halt) instruction.";
+        currentState = "execute-hlt-1";
+        break;
+      default:
+        stepDescriptionEl.textContent =
+          "Error: Unknown instruction '" + registers.cir + "'. Resetting.";
+        currentState = "idle";
+    }
+  }
+
+  /**
+   * Decode-2-addr: Copy operand (address) to MAR
+   */
+  function handleDecode2Addr() {
+    registers.mar = decodedInstruction.operand;
+    stepDescriptionEl.textContent =
+      "The address part of the instruction (" +
+      registers.mar +
+      ") is copied to the MAR, ready to access memory.";
+    highlight(["cir", "cu", "mar"], "highlight-active");
+
+    // Branch to execute phase based on opcode
+    switch (decodedInstruction.opcode) {
+      case "LOAD":
+        currentState = "execute-load-1";
+        break;
+      case "ADD":
+        currentState = "execute-add-1";
+        break;
+      case "STO":
+        currentState = "execute-sto-1";
+        break;
+    }
+  }
+
+  // --- EXECUTE PHASE: LOAD ---
+
+  /**
+   * Execute-Load-1: Send address to RAM for read
+   */
+  function handleExecuteLoad1() {
+    currentPhaseEl.textContent = "EXECUTE";
+    stepDescriptionEl.textContent =
+      "The address (" +
+      registers.mar +
+      ") is sent to RAM via the address bus. Control signals request a read operation.";
+    highlight(["mar", `mem-${registers.mar}`]);
+    activateBus(addressBusEl, "left");
+    activateBus(controlBusEl, "left");
+    currentState = "execute-load-2";
+  }
+
+  /**
+   * Execute-Load-2: Transfer data from RAM to MDR
+   */
+  function handleExecuteLoad2() {
+    registers.mdr = memory[registers.mar];
+    stepDescriptionEl.textContent =
+      "The data at memory address " +
+      registers.mar +
+      " ('" +
+      registers.mdr +
+      "') travels from RAM to the MDR via the data bus.";
+    highlight(["mdr", `mem-${registers.mar}`]);
+    activateBus(addressBusEl, "left");
+    activateBus(dataBusEl, "right");
+    activateBus(controlBusEl, "left");
+    currentState = "execute-load-3";
+  }
+
+  /**
+   * Execute-Load-3: Transfer data from MDR to ACC
+   */
+  function handleExecuteLoad3() {
+    registers.acc = registers.mdr;
+    stepDescriptionEl.textContent =
+      "The data ('" +
+      registers.acc +
+      "') is copied from the MDR to the Accumulator (ACC).";
+    highlight(["mdr", "acc"]);
+    currentState = "fetch-1";
+  }
+
+  // --- EXECUTE PHASE: ADD ---
+
+  /**
+   * Execute-Add-1: Send address to RAM for read
+   */
+  function handleExecuteAdd1() {
+    currentPhaseEl.textContent = "EXECUTE";
+    stepDescriptionEl.textContent =
+      "The address (" +
+      registers.mar +
+      ") is sent to RAM via the address bus. Control signals request a read operation.";
+    highlight(["mar", `mem-${registers.mar}`]);
+    activateBus(addressBusEl, "left");
+    activateBus(controlBusEl, "left");
+    currentState = "execute-add-2";
+  }
+
+  /**
+   * Execute-Add-2: Transfer data from RAM to MDR
+   */
+  function handleExecuteAdd2() {
+    registers.mdr = memory[registers.mar];
+    stepDescriptionEl.textContent =
+      "The data at memory address " +
+      registers.mar +
+      " ('" +
+      registers.mdr +
+      "') travels from RAM to the MDR via the data bus.";
+    highlight(["mdr", `mem-${registers.mar}`]);
+    activateBus(addressBusEl, "left");
+    activateBus(dataBusEl, "right");
+    activateBus(controlBusEl, "left");
+    currentState = "execute-add-3";
+  }
+
+  /**
+   * Execute-Add-3: Perform addition via ALU
+   */
+  function handleExecuteAdd3() {
+    const val1 = parseInt(registers.acc);
+    const val2 = parseInt(registers.mdr);
+    registers.acc = val1 + val2;
+    stepDescriptionEl.textContent =
+      "The ALU adds the value in the ACC (" +
+      val1 +
+      ") and the MDR (" +
+      val2 +
+      "). The result (" +
+      registers.acc +
+      ") is stored back in the Accumulator.";
+    highlight(["acc", "mdr", "alu"], "highlight-active");
+    currentState = "fetch-1";
+  }
+
+  // --- EXECUTE PHASE: STO ---
+
+  /**
+   * Execute-Sto-1: Copy ACC to MDR
+   */
+  function handleExecuteSto1() {
+    currentPhaseEl.textContent = "EXECUTE";
+    registers.mdr = registers.acc;
+    stepDescriptionEl.textContent =
+      "The value from the Accumulator (" +
+      registers.mdr +
+      ") is copied to the MDR, preparing to store it in memory.";
+    highlight(["acc", "mdr"]);
+    currentState = "execute-sto-2";
+  }
+
+  /**
+   * Execute-Sto-2: Send address and control signals to RAM
+   */
+  function handleExecuteSto2() {
+    stepDescriptionEl.textContent =
+      "The address (" +
+      registers.mar +
+      ") is sent via the address bus, and control signals request a write operation.";
+    highlight(["mar", "mdr", `mem-${registers.mar}`]);
+    activateBus(addressBusEl, "left");
+    activateBus(controlBusEl, "left");
+    currentState = "execute-sto-3";
+  }
+
+  /**
+   * Execute-Sto-3: Write data to RAM
+   */
+  function handleExecuteSto3() {
+    memory[registers.mar] = registers.mdr.toString();
+    stepDescriptionEl.textContent =
+      "The value in the MDR (" +
+      registers.mdr +
+      ") travels via the data bus and is written to memory at address " +
+      registers.mar +
+      ".";
+    highlight(["mdr", `mem-${registers.mar}`]);
+    activateBus(addressBusEl, "left");
+    activateBus(dataBusEl, "left");
+    activateBus(controlBusEl, "left");
+    currentState = "fetch-1";
+  }
+
+  // --- EXECUTE PHASE: HLT ---
+
+  /**
+   * Execute-Hlt-1: Halt execution
+   */
+  function handleExecuteHlt1() {
+    currentPhaseEl.textContent = "HALTED";
+    stepDescriptionEl.textContent =
+      "Program execution is stopped by the HLT instruction. Click 'Reset' to start over.";
+    highlight(["cir", "cu"], "highlight-active");
+
+    // Stop simulation
+    if (runTimer) {
+      clearInterval(runTimer);
+      runTimer = null;
+    }
+    isRunning = false;
+    btnStep.disabled = true;
+  }
+
+  // --- State Handler Dispatch Map ---
+  const stateHandlers = {
+    idle: handleIdle,
+    "fetch-1": handleFetch1,
+    "fetch-2": handleFetch2,
+    "fetch-3": handleFetch3,
+    "fetch-4": handleFetch4,
+    "fetch-5": handleFetch5,
+    "decode-1": handleDecode1,
+    "decode-2-addr": handleDecode2Addr,
+    "execute-load-1": handleExecuteLoad1,
+    "execute-load-2": handleExecuteLoad2,
+    "execute-load-3": handleExecuteLoad3,
+    "execute-add-1": handleExecuteAdd1,
+    "execute-add-2": handleExecuteAdd2,
+    "execute-add-3": handleExecuteAdd3,
+    "execute-sto-1": handleExecuteSto1,
+    "execute-sto-2": handleExecuteSto2,
+    "execute-sto-3": handleExecuteSto3,
+    "execute-hlt-1": handleExecuteHlt1,
+  };
+
   /**
    * Executes the next step in the FDE cycle state machine.
    */
   function step() {
     clearHighlights();
 
-    switch (currentState) {
-      case "idle":
-        currentState = "fetch-1";
-        // Immediately call the next step
-        step();
-        break;
-
-      // --- FETCH PHASE ---
-
-      case "fetch-1":
-        currentPhaseEl.textContent = "FETCH";
-        // 1. PC -> MAR
-        registers.mar = registers.pc;
-        stepDescriptionEl.textContent =
-          "The Program Counter (PC) holds the address of the next instruction (" +
-          registers.pc +
-          "). This address is copied to the Memory Address Register (MAR).";
-        highlight(["pc", "mar"]);
-        currentState = "fetch-2";
-        break;
-
-      case "fetch-2":
-        // 2. Address sent on address bus, control signals sent
-        stepDescriptionEl.textContent =
-          "The address (" +
-          registers.mar +
-          ") is sent to RAM via the address bus. Control signals are sent to request a read operation.";
-        highlight(["mar", `mem-${registers.mar}`]);
-        activateBus(addressBusEl, "left"); // CPU -> RAM
-        activateBus(controlBusEl, "left"); // CPU -> RAM
-        currentState = "fetch-3";
-        break;
-
-      case "fetch-3":
-        // 3. RAM[MAR] -> MDR (data travels on data bus)
-        registers.mdr = memory[registers.mar];
-        stepDescriptionEl.textContent =
-          "The instruction at memory address " +
-          registers.mar +
-          " ('" +
-          registers.mdr +
-          "') travels from RAM to the Memory Data Register (MDR) via the data bus.";
-        highlight(["mdr", `mem-${registers.mar}`]);
-        activateBus(addressBusEl, "left"); // Address held
-        activateBus(dataBusEl, "right"); // RAM -> CPU
-        activateBus(controlBusEl, "left"); // Control held
-        currentState = "fetch-4";
-        break;
-
-      case "fetch-4":
-        // 4. MDR -> CIR
-        registers.cir = registers.mdr;
-        stepDescriptionEl.textContent =
-          "The instruction ('" +
-          registers.cir +
-          "') is transferred from the MDR to the Current Instruction Register (CIR).";
-        highlight(["mdr", "cir"]);
-        currentState = "fetch-5";
-        break;
-
-      case "fetch-5":
-        // 5. PC++
-        registers.pc++;
-        stepDescriptionEl.textContent =
-          "The Program Counter (PC) is incremented to " +
-          registers.pc +
-          ", pointing to the next instruction.";
-        highlight(["pc"]);
-        currentState = "decode-1";
-        break;
-
-      // --- DECODE PHASE ---
-
-      case "decode-1":
-        currentPhaseEl.textContent = "DECODE";
-        // 1. CU decodes CIR
-        const instruction = registers.cir.split(" ");
-        decodedInstruction.opcode = instruction[0];
-        decodedInstruction.operand = instruction[1]
-          ? parseInt(instruction[1])
-          : null;
-
-        stepDescriptionEl.textContent =
-          "The Control Unit (CU) decodes the instruction in the CIR ('" +
-          registers.cir +
-          "').";
-        highlight(["cir", "cu"], "highlight-active");
-
-        // Branch to next state based on opcode
-        switch (decodedInstruction.opcode) {
-          case "LOAD":
-          case "ADD":
-          case "STO":
-            stepDescriptionEl.textContent +=
-              " It's an instruction ('" +
-              decodedInstruction.opcode +
-              "') that requires data/address (" +
-              decodedInstruction.operand +
-              ").";
-            currentState = "decode-2-addr";
-            break;
-          case "HLT":
-            stepDescriptionEl.textContent +=
-              " It is a 'HLT' (Halt) instruction.";
-            currentState = "execute-hlt-1";
-            break;
-          default:
-            stepDescriptionEl.textContent =
-              "Error: Unknown instruction '" + registers.cir + "'. Resetting.";
-            currentState = "idle";
-        }
-        break;
-
-      case "decode-2-addr":
-        // 2. Operand (address) -> MAR
-        registers.mar = decodedInstruction.operand;
-        stepDescriptionEl.textContent =
-          "The address part of the instruction (" +
-          registers.mar +
-          ") is copied to the MAR, ready to access memory.";
-        highlight(["cir", "cu", "mar"], "highlight-active");
-
-        // Branch to execute phase
-        switch (decodedInstruction.opcode) {
-          case "LOAD":
-            currentState = "execute-load-1";
-            break;
-          case "ADD":
-            currentState = "execute-add-1";
-            break;
-          case "STO":
-            currentState = "execute-sto-1";
-            break;
-        }
-        break;
-
-      // --- EXECUTE PHASE ---
-
-      // LOAD
-      case "execute-load-1":
-        currentPhaseEl.textContent = "EXECUTE";
-        // 1. Address sent to RAM, read requested
-        stepDescriptionEl.textContent =
-          "The address (" +
-          registers.mar +
-          ") is sent to RAM via the address bus. Control signals request a read operation.";
-        highlight(["mar", `mem-${registers.mar}`]);
-        activateBus(addressBusEl, "left"); // CPU -> RAM
-        activateBus(controlBusEl, "left"); // CPU -> RAM
-        currentState = "execute-load-2";
-        break;
-
-      case "execute-load-2":
-        // 2. RAM[MAR] -> MDR (data travels on data bus)
-        registers.mdr = memory[registers.mar];
-        stepDescriptionEl.textContent =
-          "The data at memory address " +
-          registers.mar +
-          " ('" +
-          registers.mdr +
-          "') travels from RAM to the MDR via the data bus.";
-        highlight(["mdr", `mem-${registers.mar}`]);
-        activateBus(addressBusEl, "left"); // Address held
-        activateBus(dataBusEl, "right"); // RAM -> CPU
-        activateBus(controlBusEl, "left"); // Control held
-        currentState = "execute-load-3";
-        break;
-
-      case "execute-load-3":
-        // 3. MDR -> ACC
-        registers.acc = registers.mdr;
-        stepDescriptionEl.textContent =
-          "The data ('" +
-          registers.acc +
-          "') is copied from the MDR to the Accumulator (ACC).";
-        highlight(["mdr", "acc"]);
-        currentState = "fetch-1"; // End of cycle
-        break;
-
-      // ADD
-      case "execute-add-1":
-        currentPhaseEl.textContent = "EXECUTE";
-        // 1. Address sent to RAM, read requested
-        stepDescriptionEl.textContent =
-          "The address (" +
-          registers.mar +
-          ") is sent to RAM via the address bus. Control signals request a read operation.";
-        highlight(["mar", `mem-${registers.mar}`]);
-        activateBus(addressBusEl, "left"); // CPU -> RAM
-        activateBus(controlBusEl, "left"); // CPU -> RAM
-        currentState = "execute-add-2";
-        break;
-
-      case "execute-add-2":
-        // 2. RAM[MAR] -> MDR (data travels on data bus)
-        registers.mdr = memory[registers.mar];
-        stepDescriptionEl.textContent =
-          "The data at memory address " +
-          registers.mar +
-          " ('" +
-          registers.mdr +
-          "') travels from RAM to the MDR via the data bus.";
-        highlight(["mdr", `mem-${registers.mar}`]);
-        activateBus(addressBusEl, "left"); // Address held
-        activateBus(dataBusEl, "right"); // RAM -> CPU
-        activateBus(controlBusEl, "left"); // Control held
-        currentState = "execute-add-3";
-        break;
-
-      case "execute-add-3":
-        // 3. ACC + MDR -> ACC (via ALU)
-        const val1 = parseInt(registers.acc);
-        const val2 = parseInt(registers.mdr);
-        registers.acc = val1 + val2;
-        stepDescriptionEl.textContent =
-          "The ALU adds the value in the ACC (" +
-          val1 +
-          ") and the MDR (" +
-          val2 +
-          "). The result (" +
-          registers.acc +
-          ") is stored back in the Accumulator.";
-        highlight(["acc", "mdr", "alu"], "highlight-active");
-        currentState = "fetch-1"; // End of cycle
-        break;
-
-      // STO
-      case "execute-sto-1":
-        currentPhaseEl.textContent = "EXECUTE";
-        // 1. ACC -> MDR
-        registers.mdr = registers.acc;
-        stepDescriptionEl.textContent =
-          "The value from the Accumulator (" +
-          registers.mdr +
-          ") is copied to the MDR, preparing to store it in memory.";
-        highlight(["acc", "mdr"]);
-        currentState = "execute-sto-2";
-        break;
-
-      case "execute-sto-2":
-        // 2. Address and control signals sent to RAM
-        stepDescriptionEl.textContent =
-          "The address (" +
-          registers.mar +
-          ") is sent via the address bus, and control signals request a write operation.";
-        highlight(["mar", "mdr", `mem-${registers.mar}`]);
-        activateBus(addressBusEl, "left"); // CPU -> RAM
-        activateBus(controlBusEl, "left"); // CPU -> RAM
-        currentState = "execute-sto-3";
-        break;
-
-      case "execute-sto-3":
-        // 3. MDR -> RAM[MAR] (data travels on data bus)
-        memory[registers.mar] = registers.mdr.toString(); // Store as string
-        stepDescriptionEl.textContent =
-          "The value in the MDR (" +
-          registers.mdr +
-          ") travels via the data bus and is written to memory at address " +
-          registers.mar +
-          ".";
-        highlight(["mdr", `mem-${registers.mar}`]);
-        activateBus(addressBusEl, "left"); // Address held
-        activateBus(dataBusEl, "left"); // CPU -> RAM (writing!)
-        activateBus(controlBusEl, "left"); // Control held
-        currentState = "fetch-1"; // End of cycle
-        break;
-
-      // HLT
-      case "execute-hlt-1":
-        currentPhaseEl.textContent = "HALTED";
-        stepDescriptionEl.textContent =
-          "Program execution is stopped by the HLT instruction. Click 'Reset' to start over.";
-        highlight(["cir", "cu"], "highlight-active");
-
-        // Stop simulation
-        if (runTimer) {
-          clearInterval(runTimer);
-          runTimer = null;
-        }
-        isRunning = false;
-        btnStep.disabled = true;
-        break;
+    // Dispatch to the appropriate handler based on current state
+    const handler = stateHandlers[currentState];
+    if (handler) {
+      handler();
+    } else {
+      // Unknown state; reset to idle
+      console.warn(`Unknown state: ${currentState}. Resetting to idle.`);
+      currentState = "idle";
+      step();
     }
 
     updateUI();
