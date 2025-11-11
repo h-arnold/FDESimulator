@@ -1,26 +1,27 @@
+import { getElements, getMemoryValueElement, getMemorySlotElement } from "./ui.js";
+
 document.addEventListener("DOMContentLoaded", () => {
   // --- DOM Elements ---
-  const btnStep = document.getElementById("btn-step");
-  const btnRun = document.getElementById("btn-run");
-  const btnReset = document.getElementById("btn-reset");
-
-  const currentPhaseEl = document.getElementById("current-phase");
-  const stepDescriptionEl = document.getElementById("step-description");
-
-  const pcValueEl = document.getElementById("pc-value");
-  const marValueEl = document.getElementById("mar-value");
-  const mdrValueEl = document.getElementById("mdr-value");
-  const cirValueEl = document.getElementById("cir-value");
-  const accValueEl = document.getElementById("acc-value");
-
-  const cuEl = document.getElementById("cu");
-  const aluEl = document.getElementById("alu");
-
-  const addressBusEl = document.getElementById("address-bus");
-  const dataBusEl = document.getElementById("data-bus");
-  const controlBusEl = document.getElementById("control-bus");
-
-  const memoryContainer = document.getElementById("memory-container");
+  const ui = getElements(document);
+  const {
+    btnStep,
+    btnRun,
+    btnReset,
+    currentPhaseEl,
+    stepDescriptionEl,
+    pcValueEl,
+    marValueEl,
+    mdrValueEl,
+    cirValueEl,
+    accValueEl,
+    cuEl,
+    aluEl,
+    addressBusEl,
+    dataBusEl,
+    controlBusEl,
+    memoryContainer,
+    simulationArea,
+  } = ui;
 
   // --- Initial State ---
   const MEMORY_SIZE = 16;
@@ -112,6 +113,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
+   * Helper to get a memory value element by address (wraps ui.js helper).
+   */
+  function getMemoryVal(address) {
+    return getMemoryValueElement(document, address);
+  }
+
+  /**
+   * Helper to get a memory slot element by address (wraps ui.js helper).
+   */
+  function getMemorySlot(address) {
+    return getMemorySlotElement(document, address);
+  }
+
+  /**
    * Updates all UI elements to reflect the current state.
    */
   function updateUI() {
@@ -123,8 +138,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Update memory UI
     for (let i = 0; i < MEMORY_SIZE; i++) {
-      const memValEl = document.getElementById(`mem-val-${i}`);
-      if (memValEl.textContent !== memory[i]) {
+      const memValEl = getMemoryVal(i);
+      if (memValEl && memValEl.textContent !== memory[i]) {
         memValEl.textContent = memory[i];
       }
     }
@@ -177,9 +192,13 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   function highlight(ids, className = "highlight") {
     ids.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.classList.add(className);
+      // Check if it's a memory address or a regular element ID
+      if (id.startsWith("mem-")) {
+        const el = getMemorySlot(parseInt(id.substring(4)));
+        if (el) el.classList.add(className);
+      } else {
+        const el = document.getElementById(id);
+        if (el) el.classList.add(className);
       }
     });
   }
@@ -510,7 +529,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize
   // Position buses initially and whenever layout changes
   function positionBuses() {
-    const sim = document.getElementById("simulation-area");
+    const sim = simulationArea;
     if (!sim) return;
     const simRect = sim.getBoundingClientRect();
 
@@ -530,7 +549,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (targetEl) cpuRect = targetEl.getBoundingClientRect();
       else {
         // fallback to CPU container: first element with id 'pc' exists
-        const fallback = document.getElementById("pc");
+        const fallback = pcValueEl;
         cpuRect = fallback
           ? fallback.getBoundingClientRect()
           : {
