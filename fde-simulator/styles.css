@@ -104,11 +104,10 @@ button:disabled {
 }
 
 .bus {
-  width: 100%;
-  min-width: 150px;
+  /* buses will be absolutely positioned across the simulation area by JS */
+  position: absolute;
   height: 8px;
   border-radius: 4px;
-  position: relative;
   transition: all 0.3s ease-in-out;
   opacity: 0.4;
 }

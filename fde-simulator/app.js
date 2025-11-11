@@ -508,5 +508,75 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Initialize
+  // Position buses initially and whenever layout changes
+  function positionBuses() {
+    const sim = document.getElementById("simulation-area");
+    if (!sim) return;
+    const simRect = sim.getBoundingClientRect();
+
+    const busEntries = [
+      { el: addressBusEl, targetId: addressBusEl.dataset.cpuTarget },
+      { el: dataBusEl, targetId: dataBusEl.dataset.cpuTarget },
+      { el: controlBusEl, targetId: controlBusEl.dataset.cpuTarget },
+    ];
+
+    busEntries.forEach(({ el, targetId }) => {
+      if (!el) return;
+      // Default to aligning with CPU center if target not found
+      const targetEl = targetId ? document.getElementById(targetId) : null;
+      const memoryRect = memoryContainer.getBoundingClientRect();
+
+      let cpuRect = null;
+      if (targetEl) cpuRect = targetEl.getBoundingClientRect();
+      else {
+        // fallback to CPU container: first element with id 'pc' exists
+        const fallback = document.getElementById("pc");
+        cpuRect = fallback
+          ? fallback.getBoundingClientRect()
+          : {
+              right: simRect.left + 40,
+              top: simRect.top + 40,
+              bottom: simRect.top + 64,
+            };
+      }
+      // compute positions relative to the simulation area's coordinate space
+      const left = Math.round(cpuRect.right - simRect.left);
+      const rightEdge = Math.round(memoryRect.left - simRect.left);
+      const width = Math.max(24, rightEdge - left);
+
+      const top = Math.round(
+        (cpuRect.top + cpuRect.bottom) / 2 - simRect.top - 4
+      ); // center the 8px bus
+
+      el.style.position = "absolute";
+      el.style.left = left + "px";
+      el.style.top = top + "px";
+      el.style.width = width + "px";
+      el.style.height = "8px";
+      // make sure inner line fills parent
+      const line = el.querySelector(".bus-line");
+      if (line) {
+        line.style.width = "100%";
+        line.style.height = "100%";
+      }
+    });
+  }
+
+  // Position buses after the DOM has been initialized and after resets
+  window.addEventListener("resize", () => {
+    // throttle slightly
+    clearTimeout(window.__positionBusesTimeout);
+    window.__positionBusesTimeout = setTimeout(positionBuses, 50);
+  });
+
+  // Call positionBuses whenever we reset or update layout
+  const originalReset = reset;
+  reset = function () {
+    originalReset();
+    // allow layout to settle then position buses
+    setTimeout(positionBuses, 20);
+  };
+
+  // initial reset (will call positionBuses via overwritten reset)
   reset();
 });
